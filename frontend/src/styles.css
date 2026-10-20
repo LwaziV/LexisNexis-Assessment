@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+	color-scheme: light;
+	--paper: #f4f5f8;
+	--surface: #ffffff;
+	--ink: #171d35;
+	--muted: #646b7c;
+	--line: #dfe2e9;
+	--navy: #111a46;
+	--navy-light: #1a285d;
+	--red: #e31837;
+	--red-dark: #bb1230;
+	--orange: #ef3f00;
+	--rose: #fff0f2;
+	--amber: #98610b;
+	--green: var(--red);
+	--green-dark: var(--red-dark);
+	--mint: var(--rose);
+	--coral: var(--red);
+}
+
+* { box-sizing: border-box; }
+
+html, body { min-height: 100%; }
+
+body {
+	margin: 0;
+	background: var(--paper);
+	color: var(--ink);
+	font-family: 'Manrope', Arial, sans-serif;
+	-webkit-font-smoothing: antialiased;
+}
+
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+	outline: 3px solid #f19aaa;
+	outline-offset: 2px;
+}
+/* You can add global styles to this file, and also import other style files */

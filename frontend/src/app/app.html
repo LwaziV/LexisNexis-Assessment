@@ -1,0 +1,232 @@
+<header class="topbar">
+  <a class="brand" href="/" aria-label="Order Desk home">
+    <span class="brand-mark">L</span>
+    <span class="brand-name">LexisNexis</span>
+    <span class="brand-product">ORDER DESK</span>
+  </a>
+  <div class="topbar-meta"><span class="live-dot"></span> SALES OPERATIONS <span class="meta-divider">/</span> ORDER INTAKE</div>
+</header>
+
+<main class="workspace">
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">SALES OPERATIONS <span>/</span> PURCHASE ORDERS</p>
+      <h1>Order intake<br><em>and tracking.</em></h1>
+    </div>
+    <!-- <p class="heading-note">Capture a customer order once.<br>Find it here whenever you need it.</p> -->
+  </section>
+
+  @if (error(); as errorText) {
+    <div class="notice notice-error" role="alert"><span>!</span>{{ errorText }}</div>
+  }
+  @if (notice(); as noticeText) {
+    <div class="notice notice-success" role="status"><span>✓</span>{{ noticeText }}</div>
+  }
+
+  <div class="desk-grid">
+    <section class="intake-panel" aria-labelledby="intake-title">
+      <div class="section-heading">
+        <div class="section-index">01</div>
+        <div><p class="eyebrow">NEW SUBMISSION</p><h2 id="intake-title">Start an order</h2></div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submitOrder()" novalidate>
+        <div class="field-grid">
+          <label class="field span-two">
+            <span>Client reference <b>*</b></span>
+            <input formControlName="externalReference" placeholder="e.g. ACME-PO-1042" autocomplete="off">
+            @if (form.controls.externalReference.touched && form.controls.externalReference.invalid) {
+              <small>A client reference is required (80 characters max).</small>
+            }
+          </label>
+          <label class="field">
+            <span>Customer name <b>*</b></span>
+            <input formControlName="customerName" placeholder="Company or contact">
+            @if (form.controls.customerName.touched && form.controls.customerName.invalid) {
+              <small>Customer name is required.</small>
+            }
+          </label>
+          <label class="field">
+            <span>Currency <b>*</b></span>
+            <input formControlName="currency" placeholder="ZAR" maxlength="3" autocapitalize="characters">
+            @if (form.controls.currency.touched && form.controls.currency.invalid) {
+              <small>Enter a three-letter currency code.</small>
+            }
+          </label>
+          <label class="field span-two">
+            <span>Customer email <b>*</b></span>
+            <input formControlName="customerEmail" type="email" placeholder="name@company.com" autocomplete="email">
+            @if (form.controls.customerEmail.touched && form.controls.customerEmail.invalid) {
+              <small>Enter a valid email address.</small>
+            }
+          </label>
+        </div>
+
+        <div class="lines-heading">
+          <div><p class="eyebrow">ORDER CONTENTS</p><span>Line items <b>*</b></span></div>
+          <button class="text-button" type="button" (click)="addItem()" [disabled]="items.length >= maxItems" [title]="items.length >= maxItems ? 'Maximum 50 line items' : 'Add line'"><span>＋</span> Add line</button>
+        </div>
+
+        <div class="line-list" formArrayName="items">
+          @for (item of items.controls; track $index; let index = $index) {
+            <div class="line-item" [formGroupName]="index">
+              <div class="line-number">{{ (index + 1).toString().padStart(2, '0') }}</div>
+              <div class="line-fields">
+                <label class="field"><span>SKU <b>*</b></span><input formControlName="sku" placeholder="SKU-001"></label>
+                <label class="field"><span>Item name <b>*</b></span><input formControlName="name" placeholder="Product name"></label>
+                <label class="field field-qty"><span>Qty <b>*</b></span><input formControlName="quantity" type="number" min="1" step="1"></label>
+                <label class="field field-price"><span>Unit price <b>*</b></span><input formControlName="unitPrice" type="number" min="0" step="0.01"></label>
+              </div>
+              <button class="remove-button" type="button" (click)="removeItem(index)" [disabled]="items.length === 1" [attr.aria-label]="'Remove line ' + (index + 1)" title="Remove line">×</button>
+              @if (item.invalid && item.touched) {
+                <small class="line-error">Enter an SKU, item name, positive whole quantity and non-negative price.</small>
+              }
+            </div>
+          }
+        </div>
+
+        <label class="field notes-field">
+          <span>Notes <i>OPTIONAL</i></span>
+          <textarea formControlName="notes" rows="2" placeholder="Delivery details or anything sales should know"></textarea>
+        </label>
+
+        <div class="form-footer">
+          <p>Totals are calculated when the order is received.</p>
+          <button class="submit-button" type="submit" [disabled]="submitting()">
+            {{ submitting() ? 'Submitting…' : 'Submit order' }} <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="orders-column" aria-labelledby="orders-title">
+      <div class="section-heading orders-heading">
+        <div class="section-index">02</div>
+        <div><p class="eyebrow">RECENT ACTIVITY <span class="count">{{ totalCount().toString().padStart(2, '0') }}</span></p><h2 id="orders-title">Order register</h2></div>
+        <button class="refresh-button" type="button" (click)="loadOrders()" aria-label="Refresh orders" title="Refresh orders">↻</button>
+      </div>
+
+      <div class="order-list" aria-live="polite">
+        @if (loading() && orders().length === 0) {
+          <div class="empty-state"><span class="loading-mark"></span><p>Loading the register…</p></div>
+        } @else if (orders().length === 0) {
+          <div class="empty-state"><span class="empty-mark">＋</span><p>No orders yet.</p><span>Your first submission will appear here.</span></div>
+        } @else {
+          @for (order of orders(); track order.id) {
+            <button class="order-row" type="button" [class.is-selected]="selectedId() === order.id" (click)="openOrder(order)">
+              <span class="row-marker" aria-hidden="true"></span>
+              <span class="order-row-main">
+                <span class="order-ref">{{ order.externalReference }}</span>
+                <span class="order-customer">{{ order.customerName }}</span>
+              </span>
+              <span class="order-row-side">
+                <span class="status-pill" [class]="'status-pill status-' + order.status.toLowerCase()">{{ order.status }}</span>
+                <span class="order-total">{{ formatMoney(order.total, order.currency) }}</span>
+              </span>
+              <span class="order-date">{{ order.createdAt | date:'d MMM, HH:mm' }}</span>
+            </button>
+          }
+        }
+      </div>
+
+      <nav class="pagination" aria-label="Order list pages">
+        <span class="pagination-summary">{{ pageStart() }}–{{ pageEnd() }} of {{ totalCount() }}</span>
+        <label class="page-size-control">Rows
+          <select [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)" aria-label="Orders per page">
+            @for (size of pageSizes; track size) { <option [value]="size">{{ size }}</option> }
+          </select>
+        </label>
+        <button type="button" (click)="goToPage(page() - 1)" [disabled]="page() <= 1 || loading()" aria-label="Previous page" title="Previous page">‹</button>
+        <span class="pagination-page">{{ page() }} / {{ totalPages() }}</span>
+        <button type="button" (click)="goToPage(page() + 1)" [disabled]="page() >= totalPages() || loading()" aria-label="Next page" title="Next page">›</button>
+      </nav>
+
+      @if (selectedOrder(); as order) {
+        <article class="detail-panel" aria-labelledby="detail-title">
+          <div class="detail-topline"><p class="eyebrow">ORDER DETAIL</p><span class="detail-id">{{ order.id.slice(0, 8).toUpperCase() }}</span></div>
+          <div class="detail-title-row">
+            <div><h3 id="detail-title">{{ order.externalReference }}</h3><p>{{ order.customerName }} <span>·</span> {{ order.customerEmail }}</p></div>
+            <span class="status-pill" [class]="'status-pill status-' + order.status.toLowerCase()">{{ order.status }}</span>
+          </div>
+          <div class="detail-items">
+            @for (item of order.items; track $index) {
+              <div class="detail-item">
+                <span class="detail-quantity">{{ item.quantity }}×</span>
+                <span class="detail-item-name"><b>{{ item.name }}</b><small>{{ item.sku }} · {{ formatMoney(item.unitPrice, order.currency) }} each</small></span>
+                <span class="detail-line-total">{{ formatMoney(item.lineTotal, order.currency) }}</span>
+              </div>
+            }
+          </div>
+          @if (order.notes) { <p class="detail-notes">“{{ order.notes }}”</p> }
+          <div class="detail-total"><span>Order total</span><strong>{{ formatMoney(order.total, order.currency) }}</strong></div>
+          <div class="detail-actions">
+            <span>UPDATE STATUS</span>
+            @for (status of nextStatuses(order.status); track status) {
+              <button type="button" [class.cancel-action]="status === 'Cancelled'" (click)="changeStatus(order, status)">{{ status }}</button>
+            }
+            @if (nextStatuses(order.status).length === 0) { <span class="terminal-note">No further changes</span> }
+          </div>
+        </article>
+      }
+    </section>
+  </div>
+
+  @if (showOrderModal()) {
+    @if (selectedOrder(); as order) {
+      <div class="order-modal-backdrop" (click)="closeOrderModal()">
+        <div class="order-modal" role="dialog" aria-modal="true" aria-labelledby="modal-order-title" (click)="$event.stopPropagation()">
+          <header class="modal-header">
+            <div>
+              <p class="eyebrow">ORDER DETAIL</p>
+              <h3 id="modal-order-title">{{ order.externalReference }}</h3>
+            </div>
+            <button type="button" class="close-modal" (click)="closeOrderModal()" aria-label="Close order details">×</button>
+          </header>
+
+          <div class="modal-content">
+            <div class="modal-summary">
+              <div>
+                <span class="label">Customer</span>
+                <strong>{{ order.customerName }}</strong>
+              </div>
+              <div>
+                <span class="label">Email</span>
+                <strong>{{ order.customerEmail }}</strong>
+              </div>
+              <div>
+                <span class="label">Status</span>
+                <strong class="status-pill" [class]="'status-pill status-' + order.status.toLowerCase()">{{ order.status }}</strong>
+              </div>
+            </div>
+
+            <div class="detail-items modal-items">
+              @for (item of order.items; track $index) {
+                <div class="detail-item">
+                  <span class="detail-quantity">{{ item.quantity }}×</span>
+                  <span class="detail-item-name"><b>{{ item.name }}</b><small>{{ item.sku }} · {{ formatMoney(item.unitPrice, order.currency) }} each</small></span>
+                  <span class="detail-line-total">{{ formatMoney(item.lineTotal, order.currency) }}</span>
+                </div>
+              }
+            </div>
+
+            @if (order.notes) {
+              <p class="detail-notes">“{{ order.notes }}”</p>
+            }
+
+            <div class="detail-total"><span>Order total</span><strong>{{ formatMoney(order.total, order.currency) }}</strong></div>
+
+            <div class="detail-actions">
+              <span>UPDATE STATUS</span>
+              @for (status of nextStatuses(order.status); track status) {
+                <button type="button" [class.cancel-action]="status === 'Cancelled'" (click)="changeStatus(order, status)">{{ status }}</button>
+              }
+              @if (nextStatuses(order.status).length === 0) { <span class="terminal-note">No further changes</span> }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  <footer class="page-footer"><span>ORDER DESK</span><span>All rights reserved. @2026</span></footer>
+</main>

@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "r/ZxXinKl+0=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\lwazi\\OneDrive\\Desktop\\LexisNexis Assessment\\backend\\OrderIntake.Api\\OrderIntake.Api.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\lwazi\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.11\\microsoft.aspnetcore.openapi.10.0.11.nupkg.sha512",
+    "C:\\Users\\lwazi\\.nuget\\packages\\microsoft.openapi\\2.7.5\\microsoft.openapi.2.7.5.nupkg.sha512"
+  ],
+  "logs": []
+}

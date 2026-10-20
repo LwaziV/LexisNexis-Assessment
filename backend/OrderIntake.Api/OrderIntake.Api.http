@@ -1,0 +1,34 @@
+@OrderIntake.Api_HostAddress = http://localhost:5048
+
+### List the first page of orders
+GET {{OrderIntake.Api_HostAddress}}/api/orders?page=1&pageSize=10
+Accept: application/json
+
+### Create an order
+POST {{OrderIntake.Api_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+	"externalReference": "PO-2026-14",
+	"customerName": "Northwind Trading",
+	"customerEmail": "orders@northwind.example",
+	"currency": "ZAR",
+	"notes": "Deliver before month end",
+	"items": [
+		{
+			"sku": "SKU-1",
+			"name": "Widget",
+			"quantity": 3,
+			"unitPrice": 16.50
+		}
+	]
+}
+
+### Change an order status (replace the ID with one returned by create/list)
+PATCH {{OrderIntake.Api_HostAddress}}/api/orders/00000000-0000-0000-0000-000000000000/status
+Content-Type: application/json
+
+{
+	"status": "Confirmed"
+}
+###
