@@ -31,3 +31,4 @@ C:\Users\lwazi\OneDrive\Desktop\LexisNexis Assessment\backend\OrderIntake.Api\ob
 C:\Users\lwazi\OneDrive\Desktop\LexisNexis Assessment\backend\OrderIntake.Api\obj\Debug\net10.0\OrderIntake.Api.pdb
 C:\Users\lwazi\OneDrive\Desktop\LexisNexis Assessment\backend\OrderIntake.Api\obj\Debug\net10.0\OrderIntake.Api.genruntimeconfig.cache
 C:\Users\lwazi\OneDrive\Desktop\LexisNexis Assessment\backend\OrderIntake.Api\obj\Debug\net10.0\ref\OrderIntake.Api.dll
+C:\Users\lwazi\OneDrive\Desktop\LexisNexis Assessment\backend\OrderIntake.Api\obj\Debug\net10.0\OrderIntake.Api.sourcelink.json
